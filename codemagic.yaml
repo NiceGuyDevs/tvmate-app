@@ -6,23 +6,15 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
-      vars:
-        PROJECT_DIR: TVMateApp
 
     scripts:
-      - name: Set up project path
-        script: |
-          cd $PROJECT_DIR
-
       - name: Get Flutter packages
         script: |
-          cd $PROJECT_DIR
           flutter pub get
 
       - name: Build iOS IPA
         script: |
-          cd $PROJECT_DIR
           flutter build ipa --release
 
     artifacts:
-      - TVMateApp/build/ios/ipa/*.ipa
+      - build/ios/ipa/*.ipa
