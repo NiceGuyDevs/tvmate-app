@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+  Static mock — mirrors Flutter:
+    lib/ui/new_settings/pages/appearance_page.dart  (NsAppearancePage)
+    lib/ui/new_settings/widgets/ns_appearance_controls.dart (tab strip, sliders, options, preview)
+    lib/ui/new_settings/new_settings_theme.dart (NsColors, NsRadius, NsShadow)
+  Open in a browser. Tabs + Live TV controls update meta + preview; "Live view" hides the left card.
+-->
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Appearance — NsAppearancePage (HTML mock)</title>
+  <style>
+    /* NsColors + NsRadius from new_settings_theme.dart */
+    :root {
+      --bg: #0a0d13;
+      --bg2: #0d1119;
+      --surface: #131822;
+      --surface2: #181f2c;
+      --surface3: #1f2837;
+      --line: #1b2330;
+      --line2: #28324a;
+      --text: #eef2f7;
+      --text2: #a8b0bd;
+      --text3: #6f7889;
+      --text4: #4b5363;
+      --accent: #4dd0e1;
+      --accent2: #22d3ee;
+      --accent-soft: rgba(77, 208, 225, 0.14);
+      --accent-line: rgba(77, 208, 225, 0.5);
+      --accent-glow: rgba(77, 208, 225, 0.22);
+      --r-card: 14px;
+      --r-row: 10px;
+      --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+      --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 30px rgba(0, 0, 0, 0.35);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .ns-scroll {
+      max-width: 880px;
+      margin: 0 auto;
+      padding: 20px 20px 32px;
+    }
+
+    /* NsSubPageHead */
+    .ns-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .back-btn {
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 7px 11px 7px 8px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: var(--shadow-1);
+    }
+    .back-btn:hover { border-color: var(--line2); color: var(--text); }
+    .head-main { flex: 1; min-width: 0; }
+    .head-title {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.15;
+      letter-spacing: 0.02em;
+    }
+    .head-sub {
+      margin-top: 3px;
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.35;
+      max-width: 52ch;
+    }
+    .ghost-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text2);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .ghost-btn:hover {
+      background: var(--surface);
+      border-color: var(--line);
+      color: var(--text);
+    }
+
+    /* NsAppearanceTabStrip — 4 cols ≥760px, 2 cols narrow */
+    .ap-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .ap-tab {
+      flex: 1 1 calc(25% - 6px);
+      min-width: 160px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 13px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      cursor: pointer;
+      text-align: left;
+      box-shadow: var(--shadow-1);
+      transition: border-color 0.14s var(--ease), box-shadow 0.14s var(--ease);
+    }
+    .ap-tab:hover { border-color: var(--line2); }
+    .ap-tab[aria-selected="true"] {
+      border-color: var(--accent-line);
+      box-shadow: 0 0 0 1px rgba(77, 208, 225, 0.22), 0 4px 12px rgba(77, 208, 225, 0.13);
+    }
+    .ap-tab .icon-box {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1px solid var(--line);
+      background: var(--bg2);
+      font-size: 15px;
+    }
+    .ap-tab[aria-selected="true"] .icon-box {
+      background: var(--accent-soft);
+      border-color: var(--accent-line);
+    }
+    .ap-tab .lab { font-size: 12.5px; font-weight: 700; color: var(--text3); line-height: 1.2; }
+    .ap-tab[aria-selected="true"] .lab { color: var(--text); }
+    .ap-tab .meta { font-size: 10.5px; font-weight: 500; color: var(--text4); margin-top: 2px; }
+    .ap-tab[aria-selected="true"] .meta { color: var(--text3); }
+    @media (max-width: 759px) {
+      .ap-tab { flex: 1 1 calc(50% - 4px); min-width: 140px; padding: 9px 10px; }
+      .ap-tab .icon-box { width: 26px; height: 26px; font-size: 13px; }
+      .ap-tab .lab { font-size: 11.5px; }
+      .ap-tab .meta { font-size: 9.5px; }
+    }
+
+    /* _TabBody — Row split ≥680px */
+    .split {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 18px;
+    }
+    .split .col-controls { flex: 14; min-width: 0; }
+    .split .col-preview { flex: 9; min-width: 0; position: relative; }
+    @media (max-width: 679px) {
+      .split { flex-direction: column; gap: 12px; }
+      .split .col-controls, .split .col-preview { flex: none; width: 100%; }
+    }
+
+    /* NsAppearanceCard */
+    .ns-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-card);
+      box-shadow: var(--shadow-1);
+      padding: 4px 0;
+    }
+
+    /* NsSliderRow */
+    .slider-row {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      gap: 16px;
+    }
+    .slider-row .labels {
+      width: 220px;
+      flex-shrink: 0;
+    }
+    @media (max-width: 520px) { .slider-row .labels { width: 180px; } }
+    .slider-row .t { font-size: 14px; font-weight: 600; color: var(--text); }
+    .slider-row .s { margin-top: 3px; font-size: 12px; color: var(--text2); line-height: 1.3; }
+    .slider-row .track-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    input[type="range"] {
+      flex: 1;
+      height: 4px;
+      accent-color: var(--accent);
+      min-width: 80px;
+    }
+    .val-pill {
+      flex-shrink: 0;
+      min-width: 48px;
+      padding: 4px 10px;
+      text-align: center;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text2);
+      background: var(--bg2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+    .hr { height: 1px; background: var(--line); margin: 0; }
+
+    /* Channel card style block */
+    .field-block { padding: 14px 16px; }
+    .field-block .t { font-size: 14px; font-weight: 600; color: var(--text); }
+    .field-block .s { margin-top: 3px; font-size: 12px; color: var(--text2); }
+    .opts { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .opt {
+      flex: 1 1 calc(50% - 3px);
+      min-width: 140px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+      background: var(--bg2);
+      cursor: pointer;
+      font-size: 12.5px;
+      color: var(--text2);
+    }
+    .opt:hover { background: var(--surface); border-color: var(--line2); color: var(--text); }
+    .opt[aria-checked="true"] {
+      border-color: var(--accent-line);
+      background: var(--bg2);
+      color: var(--text);
+    }
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1.5px solid var(--text3);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .opt[aria-checked="true"] .dot { border-color: var(--accent); }
+    .opt[aria-checked="true"] .dot::after {
+      content: "";
+      position: absolute;
+      inset: 3px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    /* NsPreviewCard */
+    .preview-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--r-card);
+      background: var(--surface2);
+      background-image: linear-gradient(to bottom, rgba(77, 208, 225, 0.1), transparent);
+    }
+    .preview-card .eyebrow {
+      font-size: 10.5px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--text3);
+      text-transform: uppercase;
+    }
+    .preview-inner { margin-top: 14px; }
+
+    /* _LiveTvLayoutPreview — 16:9 */
+    .tv-frame {
+      aspect-ratio: 16 / 9;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: #0a1420;
+      padding: 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .tv-hero {
+      border-radius: 6px;
+      background: linear-gradient(135deg, #1e2a3e, #0e1726);
+      box-shadow: 0 4px 14px rgba(77, 208, 225, 0.13);
+      display: flex;
+      align-items: flex-end;
+      padding: 6px;
+      font-size: 9.5px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.85);
+    }
+    .tv-grid-wrap { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 4px; }
+    .tv-row { flex: 1; display: flex; gap: 4px; min-height: 0; }
+    .tv-tile {
+      flex: 1;
+      background: #13202f;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* _ChannelCardMock */
+    .ch-mock {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--bg2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ch-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text2);
+    }
+    .ch-lines .n { font-size: 13px; font-weight: 600; color: var(--text); }
+    .ch-lines .e { font-size: 10.5px; color: var(--text3); margin-top: 2px; }
+
+    /* Live view toggle — extra chrome not in Flutter split, per product request */
+    .view-bar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .seg {
+      display: flex;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .seg button {
+      border: none;
+      background: transparent;
+      color: var(--text3);
+      padding: 9px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .seg button.on { background: var(--accent-soft); color: var(--text); }
+    .show-chip {
+      display: none;
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: 3;
+      padding: 9px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--accent-line);
+      background: var(--surface);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+    }
+    body.live-only .col-controls { display: none !important; }
+    body.live-only .split { gap: 0; }
+    body.live-only .view-bar .seg { display: none; }
+    body.live-only .show-chip { display: block; }
+    body.live-only .preview-card { padding-top: 44px; }
+
+    /* Other tabs placeholder */
+    .placeholder {
+      padding: 24px 16px;
+      color: var(--text3);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .foot-note {
+      margin-top: 20px;
+      font-size: 11px;
+      color: var(--text4);
+      line-height: 1.45;
+      max-width: 72ch;
+    }
+  </style>
+</head>
+<body>
+  <div class="ns-scroll">
+    <header class="ns-head">
+      <button type="button" class="back-btn" title="Mock">← Back</button>
+      <div class="head-main">
+        <div class="head-title">Appearance</div>
+        <p class="head-sub">Pick a section, then tune its layout &amp; cards. The preview updates live.</p>
+      </div>
+      <button type="button" class="ghost-btn" id="btnReset" title="Resets active tab only in app">↺ Reset section</button>
+    </header>
+
+    <div class="ap-tabs" role="tablist" aria-label="Appearance sections">
+      <button type="button" class="ap-tab" role="tab" data-tab="liveTv" aria-selected="true">
+        <span class="icon-box" aria-hidden="true">▣</span>
+        <span style="min-width:0">
+          <div class="lab">Live TV</div>
+          <div class="meta" id="meta-liveTv">Hero 38% · 6 cols</div>
+        </span>
+      </button>
+      <button type="button" class="ap-tab" role="tab" data-tab="heroBg" aria-selected="false">
+        <span class="icon-box" aria-hidden="true">◧</span>
+        <span style="min-width:0">
+          <div class="lab">Hero background</div>
+          <div class="meta" id="meta-heroBg">Deep blue · Solid</div>
+        </span>
+      </button>
+      <button type="button" class="ap-tab" role="tab" data-tab="movies" aria-selected="false">
+        <span class="icon-box" aria-hidden="true">◆</span>
+        <span style="min-width:0">
+          <div class="lab">Movies</div>
+          <div class="meta" id="meta-movies">6 per row · Poster + title + year</div>
+        </span>
+      </button>
+      <button type="button" class="ap-tab" role="tab" data-tab="series" aria-selected="false">
+        <span class="icon-box" aria-hidden="true">▤</span>
+        <span style="min-width:0">
+          <div class="lab">Series</div>
+          <div class="meta" id="meta-series">6 per row · Poster + title + year</div>
+        </span>
+      </button>
+    </div>
+
+    <div class="view-bar">
+      <span style="font-size:11px;color:var(--text4);margin-right:auto">Preview column</span>
+      <div class="seg" role="group" aria-label="Preview visibility">
+        <button type="button" class="on" id="vSettings">Settings view</button>
+        <button type="button" id="vLive">Live view</button>
+      </div>
+    </div>
+
+    <div class="split" id="split">
+      <div class="col-controls" id="panelBody">
+        <!-- Live TV — _LiveTvControls -->
+        <div class="ns-card" id="body-liveTv">
+          <div class="slider-row">
+            <div class="labels">
+              <div class="t">Hero height</div>
+              <div class="s">Featured area at the top of Live TV.</div>
+            </div>
+            <div class="track-wrap">
+              <input type="range" id="heroH" min="20" max="60" step="2" value="38" />
+              <span class="val-pill" id="heroHv">38%</span>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <div class="slider-row">
+            <div class="labels">
+              <div class="t">Grid columns</div>
+              <div class="s">Number of channels per row.</div>
+            </div>
+            <div class="track-wrap">
+              <input type="range" id="cols" min="3" max="9" step="1" value="6" />
+              <span class="val-pill" id="colsv">6</span>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <div class="field-block">
+            <div class="t">Channel card style</div>
+            <div class="s" id="styleSub">Logo + name + EPG</div>
+            <div class="opts" id="styleOpts" role="radiogroup"></div>
+          </div>
+        </div>
+
+        <div class="ns-card placeholder" id="body-heroBg" hidden>
+          <strong style="color:var(--text2)">Hero background</strong><br />
+          In the app this tab mirrors <code>NsAppearancePage</code> hero controls (gradient, base, wash, overlay, bezel). Same card shell as Live TV.
+        </div>
+        <div class="ns-card placeholder" id="body-movies" hidden>
+          <strong style="color:var(--text2)">Movies</strong><br />
+          Sliders + poster style options — same split + preview pattern as Flutter.
+        </div>
+        <div class="ns-card placeholder" id="body-series" hidden>
+          <strong style="color:var(--text2)">Series</strong><br />
+          Same as Movies tab body, series rail state.
+        </div>
+      </div>
+
+      <div class="col-preview">
+        <button type="button" class="show-chip" id="showChip">Show settings</button>
+        <div class="preview-card" id="previewCard">
+          <div class="eyebrow">Live preview</div>
+          <div class="preview-inner" id="previewInner">
+            <!-- Injected for liveTv / placeholders for other tabs -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="foot-note">
+      Colors, radii, tab strip, slider rows, option tiles, and preview card match
+      <code>new_settings_theme.dart</code> + <code>ns_appearance_controls.dart</code> + <code>appearance_page.dart</code>.
+      The Settings / Live toggle only affects this HTML mock (Flutter <code>NsAppearancePage</code> keeps both columns visible).
+      Defaults: hero 38%, 6 cols, style <code>logoNameEpg</code> — same as <code>NsApDefaults</code>.
+    </p>
+  </div>
+
+  <script>
+(function () {
+  var styles = [
+    { id: 'nameOnly', label: 'Name only' },
+    { id: 'logoNameEpg', label: 'Logo + name + EPG' },
+    { id: 'logoName', label: 'Logo + name' },
+    { id: 'logoOnly', label: 'Logo only' }
+  ];
+  var state = {
+    tab: 'liveTv',
+    liveTvHero: 38,
+    liveTvCols: 6,
+    liveTvCardStyle: 'logoNameEpg',
+    liveView: false
+  };
+
+  var metaLive = document.getElementById('meta-liveTv');
+  var heroH = document.getElementById('heroH');
+  var heroHv = document.getElementById('heroHv');
+  var cols = document.getElementById('cols');
+  var colsv = document.getElementById('colsv');
+  var styleSub = document.getElementById('styleSub');
+  var styleOpts = document.getElementById('styleOpts');
+  var previewInner = document.getElementById('previewInner');
+  var tabs = document.querySelectorAll('.ap-tab');
+  var bodies = {
+    liveTv: document.getElementById('body-liveTv'),
+    heroBg: document.getElementById('body-heroBg'),
+    movies: document.getElementById('body-movies'),
+    series: document.getElementById('body-series')
+  };
+  var vSettings = document.getElementById('vSettings');
+  var vLive = document.getElementById('vLive');
+  var showChip = document.getElementById('showChip');
+
+  function labelForStyle(id) {
+    var o = styles.find(function (x) { return x.id === id; });
+    return o ? o.label : id;
+  }
+
+  function renderStyleOpts() {
+    styleOpts.innerHTML = '';
+    styles.forEach(function (o) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt';
+      b.setAttribute('role', 'radio');
+      b.setAttribute('aria-checked', o.id === state.liveTvCardStyle ? 'true' : 'false');
+      b.dataset.id = o.id;
+      b.innerHTML = '<span class="dot"></span><span>' + o.label + '</span>';
+      b.addEventListener('click', function () {
+        state.liveTvCardStyle = o.id;
+        styleSub.textContent = labelForStyle(o.id);
+        Array.prototype.forEach.call(styleOpts.querySelectorAll('.opt'), function (x) {
+          x.setAttribute('aria-checked', x.dataset.id === state.liveTvCardStyle ? 'true' : 'false');
+        });
+        syncMeta();
+        renderPreview();
+      });
+      styleOpts.appendChild(b);
+    });
+  }
+
+  function syncMeta() {
+    metaLive.textContent = 'Hero ' + state.liveTvHero + '% · ' + state.liveTvCols + ' cols';
+  }
+
+  function flexHero() { return state.liveTvHero; }
+  function flexGrid() { return 100 - state.liveTvHero; }
+
+  function renderPreview() {
+    if (state.tab !== 'liveTv') {
+      previewInner.innerHTML = '<p style="margin:0;color:var(--text3);font-size:13px">Switch to <strong>Live TV</strong> tab to see the 16:9 layout preview + channel mock (<code>_LiveTvPreview</code>).</p>';
+      return;
+    }
+    var c = state.liveTvCols;
+    var rows = 2;
+    var tiles = '';
+    for (var r = 0; r < rows; r++) {
+      tiles += '<div class="tv-row" style="flex:' + (1 / rows) + '">';
+      for (var i = 0; i < c; i++) {
+        tiles += '<div class="tv-tile"></div>';
+      }
+      tiles += '</div>';
+    }
+    previewInner.innerHTML =
+      '<div class="tv-frame">' +
+        '<div class="tv-hero" style="flex:' + flexHero() + ' 1 0">Featured · BBC One HD</div>' +
+        '<div class="tv-grid-wrap" style="flex:' + flexGrid() + ' 1 0">' + tiles + '</div>' +
+      '</div>' +
+      '<div class="ch-mock">' +
+        '<div class="ch-logo">BBC</div>' +
+        '<div class="ch-lines">' +
+          '<div class="n">BBC One HD</div>' +
+          '<div class="e">Evening news · Now playing</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function selectTab(id) {
+    state.tab = id;
+    tabs.forEach(function (t) {
+      var on = t.dataset.tab === id;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    Object.keys(bodies).forEach(function (k) {
+      bodies[k].hidden = k !== id;
+    });
+    document.getElementById('previewCard').querySelector('.eyebrow').textContent =
+      id === 'liveTv' ? 'Live preview' : 'Preview';
+    renderPreview();
+  }
+
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { selectTab(t.dataset.tab); });
+  });
+
+  heroH.addEventListener('input', function () {
+    state.liveTvHero = +heroH.value;
+    heroHv.textContent = state.liveTvHero + '%';
+    syncMeta();
+    renderPreview();
+  });
+  cols.addEventListener('input', function () {
+    state.liveTvCols = +cols.value;
+    colsv.textContent = String(state.liveTvCols);
+    syncMeta();
+    renderPreview();
+  });
+
+  function setLiveView(on) {
+    state.liveView = on;
+    document.body.classList.toggle('live-only', on);
+    vSettings.classList.toggle('on', !on);
+    vLive.classList.toggle('on', on);
+  }
+  vSettings.addEventListener('click', function () { setLiveView(false); });
+  vLive.addEventListener('click', function () { setLiveView(true); });
+  showChip.addEventListener('click', function () { setLiveView(false); });
+
+  document.getElementById('btnReset').addEventListener('click', function () {
+    if (state.tab === 'liveTv') {
+      state.liveTvHero = 38;
+      state.liveTvCols = 6;
+      state.liveTvCardStyle = 'logoNameEpg';
+      heroH.value = 38;
+      heroHv.textContent = '38%';
+      cols.value = 6;
+      colsv.textContent = '6';
+      styleSub.textContent = labelForStyle('logoNameEpg');
+      Array.prototype.forEach.call(styleOpts.querySelectorAll('.opt'), function (x) {
+        x.setAttribute('aria-checked', x.dataset.id === state.liveTvCardStyle ? 'true' : 'false');
+      });
+      syncMeta();
+      renderPreview();
+    }
+  });
+
+  renderStyleOpts();
+  syncMeta();
+  renderPreview();
+})();
+  </script>
+</body>
+</html>

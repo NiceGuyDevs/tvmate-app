@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>New settings — backup / restore messaging (design preview)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Tokens (mirror lib/ui/new_settings/new_settings_theme.dart) ── */
+    :root {
+      --bg: #0a0d13;
+      --bg-2: #0d1119;
+      --surface: #131822;
+      --surface-2: #181f2c;
+      --line: #1b2330;
+      --line-2: #28324a;
+      --text: #eef2f7;
+      --text-2: #a8b0bd;
+      --text-3: #6f7889;
+      --text-4: #4b5363;
+      --accent: #4dd0e1;
+      --accent-soft: rgba(77, 208, 225, 0.14);
+      --accent-line: rgba(77, 208, 225, 0.5);
+      --success: #4ade80;
+      --success-soft: rgba(74, 222, 128, 0.12);
+      --danger: #f87171;
+      --danger-soft: rgba(248, 113, 113, 0.12);
+      --r-card: 14px;
+      --r-row: 10px;
+      --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+      --shadow-1: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 30px rgba(0, 0, 0, 0.35);
+      --shadow-2: 0 18px 60px rgba(0, 0, 0, 0.55);
+      font-family: "Inter", system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 32px 24px 120px;
+    }
+
+    h1 {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: var(--text-2);
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+
+    p.lead {
+      margin: 0 0 28px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-3);
+      max-width: 58ch;
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 36px;
+    }
+    @media (max-width: 720px) {
+      .compare { grid-template-columns: 1fr; }
+    }
+
+    .panel-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-3);
+      margin-bottom: 12px;
+    }
+
+    /* Faux sub-page (Backup & restore) for context */
+    .subpage {
+      background: var(--bg-2);
+      border: 1px solid var(--line);
+      border-radius: var(--r-card);
+      box-shadow: var(--shadow-1);
+      padding: 20px 22px 28px;
+      margin-bottom: 20px;
+    }
+    .subpage h2 {
+      margin: 0 0 6px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .subpage .desc {
+      margin: 0 0 20px;
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--text-3);
+      max-width: 42ch;
+    }
+    .fake-card {
+      height: 64px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-row);
+      opacity: 0.5;
+    }
+
+    /* A) “Default Material snack” — what feels off-theme (illustration) */
+    .material-snack-ugly {
+      display: inline-flex;
+      align-items: center;
+      padding: 14px 20px;
+      border-radius: 4px;
+      background: #e6e1e5;
+      color: #1c1b1f;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    /* B) Proposed: Ns toast — success (after restore) */
+    .ns-toast {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      max-width: 400px;
+      padding: 14px 16px 14px 14px;
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      border-radius: var(--r-row);
+      box-shadow: var(--shadow-1);
+      position: relative;
+    }
+    .ns-toast::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 10px;
+      bottom: 10px;
+      width: 3px;
+      border-radius: 0 2px 2px 0;
+      background: linear-gradient(180deg, var(--success), #22c55e);
+      opacity: 0.95;
+    }
+    .ns-toast .glyph {
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: var(--success-soft);
+      border: 1px solid rgba(74, 222, 128, 0.28);
+    }
+    .ns-toast .glyph svg { width: 20px; height: 20px; stroke: var(--success); fill: none; stroke-width: 2.2; }
+    .ns-toast .body h3 {
+      margin: 0 0 4px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .ns-toast .body p {
+      margin: 0;
+      font-size: 12.5px;
+      line-height: 1.45;
+      color: var(--text-2);
+    }
+    .ns-toast .dismiss {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-3);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 6px;
+    }
+    .ns-toast .dismiss:hover { color: var(--text-2); background: var(--surface-2); }
+
+    /* C) Proposed: compact inline strip (stays under the header) */
+    .ns-strip {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 4px;
+      margin-bottom: 20px;
+      padding: 10px 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--r-row);
+      box-shadow: var(--shadow-1);
+    }
+    .ns-strip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 0 3px var(--success-soft);
+    }
+    .ns-strip .text {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+    .ns-strip .text strong { color: var(--text); font-weight: 700; }
+
+    /* D) Error variant (import failed) */
+    .ns-toast.err::before {
+      background: linear-gradient(180deg, var(--danger), #ef4444);
+    }
+    .ns-toast.err .glyph {
+      background: var(--danger-soft);
+      border-color: rgba(248, 113, 113, 0.3);
+    }
+    .ns-toast.err .glyph svg { stroke: var(--danger); }
+
+    .note {
+      margin-top: 8px;
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--text-4);
+      max-width: 52ch;
+    }
+
+    /* Modal preview (confirm restore) — tighten title wrap */
+    .modal-preview {
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--line-2);
+      border-radius: var(--r-card);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+      padding: 28px;
+    }
+    .modal-head {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .modal-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-line);
+    }
+    .modal-icon svg { width: 20px; height: 20px; stroke: var(--accent); fill: none; }
+    .modal-title {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--text);
+    }
+    .modal-msg {
+      margin-top: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-2);
+    }
+    .modal-actions { margin-top: 24px; display: flex; justify-content: flex-end; gap: 10px; }
+    .btn {
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 0 20px;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .btn:hover { background: var(--surface-2); border-color: var(--line-2); }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent-line);
+      color: #001317;
+    }
+    .btn.primary:hover { filter: brightness(1.05); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>New settings — messaging preview</h1>
+    <p class="lead">
+      This page is a <strong>static design reference</strong> for backup/restore feedback.
+      Styling uses the same tokens as <code>new_settings_theme.dart</code> (Ns colors, surfaces, radii, shadows).
+      Open this file in a browser to review before implementing in Flutter.
+    </p>
+
+    <div class="subpage">
+      <h2>Backup &amp; restore</h2>
+      <p class="desc">Faux page chrome — the toast examples below are what you’d see after operations.</p>
+
+      <!-- Strip variant: subtle, in-flow -->
+      <div class="ns-strip">
+        <span class="dot" aria-hidden="true"></span>
+        <p class="text">Backup restored: <strong>2026-04-22  14:30</strong> · settings reloaded</p>
+      </div>
+      <div class="fake-card" aria-hidden="true"></div>
+    </div>
+
+    <h1 style="margin-top:8px">Compare</h1>
+    <p class="lead">Left: typical default SnackBar look on a dark app (clashes). Right: Ns toast proposal.</p>
+
+    <div class="compare">
+      <div>
+        <div class="panel-label">Off-theme (illustration)</div>
+        <div class="material-snack-ugly">Settings restored from backup</div>
+        <p class="note">Light surface + dark text: reads like system UI, not the new-settings island.</p>
+      </div>
+      <div>
+        <div class="panel-label">On-theme — success toast</div>
+        <div class="ns-toast" role="status">
+          <div class="glyph" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="body">
+            <h3>Backup applied</h3>
+            <p>Your settings and playlists were replaced with this file. You’re on the latest snapshot.</p>
+          </div>
+          <button type="button" class="dismiss" tabindex="-1">Dismiss</button>
+        </div>
+        <p class="note">Dark <code>--surface</code>, <code>--line-2</code> border, success rail + soft icon tile — same language as <code>NsConfirmDialog</code>.</p>
+      </div>
+    </div>
+
+    <div class="compare">
+      <div>
+        <div class="panel-label">On-theme — error toast</div>
+        <div class="ns-toast err" role="alert">
+          <div class="glyph" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 8v4m0 4h.01M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="body">
+            <h3>Couldn’t read backup</h3>
+            <p>The file may be damaged or from an unsupported version.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-label">Confirm restore (existing Ns dialog pattern)</div>
+        <div class="modal-preview">
+          <div class="modal-head">
+            <div class="modal-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M8 8h.01M12 12h.01M16 8h.01M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z" stroke-width="1.5"/></svg>
+            </div>
+            <div class="modal-title">Restore &quot;2026-04-22  14:30&quot;?</div>
+          </div>
+          <p class="modal-msg">Your current settings will be overwritten with the contents of this backup.</p>
+          <div class="modal-actions">
+            <button type="button" class="btn">Cancel</button>
+            <button type="button" class="btn primary">Restore</button>
+          </div>
+        </div>
+        <p class="note">Dialog already uses Ns tokens. If the title felt crowded, let it wrap to two lines in the <strong>title only</strong> and keep a single short message body (as here).</p>
+      </div>
+    </div>
+
+    <h1>Implementation note</h1>
+    <p class="lead" style="margin-bottom:0">
+      In Flutter, map success/error to a themed <code>SnackBarTheme</code> under <code>nsIslandThemeData</code>,
+      or a tiny <code>showNsMessage()</code> helper that composes the same card as the &ldquo;Ns toast&rdquo; above
+      (surface + left rail + icon tile + <code>NsType</code> text styles).
+    </p>
+  </div>
+</body>
+</html>

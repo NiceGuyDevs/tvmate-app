@@ -1,0 +1,28 @@
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    configurations.all {
+        resolutionStrategy {
+            // Flutter TextInputPlugin requires EditorInfoCompat.setStylusHandwritingEnabled (core 1.13+).
+            // Pinning 1.12.0 caused NoSuchMethodError on TV devices when focusing TextFields.
+            force "androidx.core:core-ktx:1.15.0"
+            force "androidx.core:core:1.15.0"
+            force "androidx.browser:browser:1.7.0"
+        }
+    }
+}
+
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(":app")
+}
+
+tasks.register("clean", Delete) {
+    delete rootProject.buildDir
+}

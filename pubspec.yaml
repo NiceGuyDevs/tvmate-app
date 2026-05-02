@@ -1,0 +1,59 @@
+name: tvmatepro
+description: TVMate Pro — premium IPTV client for Android TV & Desktop.
+publish_to: "none"
+version: 1.0.1+607
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
+  http: ^1.2.2
+  url_launcher: ^6.3.1
+  shared_preferences: ^2.3.3
+  sqflite: ^2.4.1
+  path: ^1.9.0
+  crypto: ^3.0.6
+  share_plus: ^10.1.4
+  path_provider: ^2.1.5
+  timezone: ^0.10.0
+  flutter_secure_storage: ^9.2.4
+  media_kit: ^1.2.6
+  media_kit_video: ^2.0.1
+  media_kit_libs_windows_video: ^1.0.11
+  media_kit_libs_macos_video: ^1.1.4
+  sqflite_common_ffi: ^2.3.4
+  qr_flutter: ^4.1.0
+  google_sign_in: ^6.2.2
+  window_manager: ^0.5.1
+  screen_retriever: ^0.2.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: assets/images/tvmateproappicon.png
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: assets/images/tvmateproappicon_foreground.png
+
+flutter:
+  generate: true
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/images/movies_demo/
+    - assets/images/demo_tv_shows/
+    - assets/images/ch_cannels_demo/
+  fonts:
+    # DSEG — 7-segment display (SIL Open Font License 1.1). See https://github.com/keshikan/DSEG
+    - family: DSEG7Classic
+      fonts:
+        - asset: assets/fonts/DSEG7Classic-Regular.ttf
