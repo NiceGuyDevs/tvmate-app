@@ -10,6 +10,18 @@ workflows:
       - name: Install deps
         script: flutter pub get
 
-      - name: Build (NO signing)
+      - name: Auto signing (THIS FIXES EVERYTHING)
         script: |
-          flutter build ios --release --no-codesign
+          keychain initialize
+          app-store-connect fetch-signing-files "com.barak.tvmate" \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+
+      - name: Build signed IPA
+        script: |
+          flutter build ipa --release
+
+    artifacts:
+      - build/ios/ipa/*.ipa
